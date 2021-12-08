@@ -11,16 +11,29 @@ function App() {
 
   const [time, setTime] = useState(0);
   const [flowing, setFlowing] = useState(false);  //  is time flowing
-  const [status, setStatus] = useState(0);  //  for control pane display
+  // const [status, setStatus] = useState(0);  //  for control pane display
   const [records, setRecords] = useState([]); //  for prev time display
 
-  const handleStart = () => {
-    setFlowing(prevState => !prevState);
-    setStatus(1);
+  const showPopup = (text) => {
+    let small_popup = document.getElementById("small_popup");
+    small_popup.innerText = text;
+    small_popup.style.right = "1px";
+    small_popup.style.opacity="1";
+    setTimeout(() => {
+      small_popup.style.right = "-15rem";
+      small_popup.style.opacity="0";
+    }, 2000);
   }
 
-  const handleResume = () => {
-    handleStart();
+  const handleStart = () => {
+    setFlowing(true);
+    showPopup("Timer Started");
+    // setStatus(1);
+  }
+
+  const handleWait = () => {
+    setFlowing(false);
+    showPopup("Timer Stopped (Wait)");
   }
 
   const handleStop = () => {
@@ -28,18 +41,19 @@ function App() {
       setFlowing(false);
       setRecords([...records, time]);
       setTime(0);
+      showPopup("Timer Stopped");
     }
-    setStatus(2);
   }
 
   const handleReset = () => {
     setTime(0);
     setFlowing(true);
-    setStatus(0);
     setRecords([]);
+    showPopup("Reset Timer");
   }
 
   useEffect(()=>{
+
       //  Dealing with 300ms doubleclick (if second click is 300ms after first -- nothing happens)
     fromEvent(document, 'click')
         .subscribe(e => { //  subscribe to fromEvent
@@ -48,13 +62,13 @@ function App() {
             if (e.detail===2) {observer.next(" 300ms double click")}  //  if 2 click in 300ms -- push subscriber
           }).subscribe( //  subscribe to observable
               value => {
-                if (flowing) handleStop();
+                if (flowing) handleWait();
                 console.log(value);
               }
           );
         });
 
-  }, [handleResume, handleStop, flowing]);
+  }, [handleStop, flowing]);
 
   useEffect(() => {
 
@@ -89,13 +103,13 @@ function App() {
                 start={handleStart}
                 stop={handleStop}
                 reset={handleReset}
-                resume={handleResume}
-                status={status}
+                wait={handleWait}
             />
           </div>
           <div className='link-project'>
             <p><b>300ms doubleclick to Wait</b></p>
           </div>
+          <div id="small_popup"/>
         </div>
       </div>
     </div>
